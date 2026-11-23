@@ -10,14 +10,17 @@ header{padding:18px 18px 4px}h1{margin:0;font-size:22px}.sub{color:var(--mu);mar
 .card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin:12px 16px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .mu{color:var(--mu);font-size:13px}.up{color:var(--up)}.dn{color:var(--dn)}.gd{color:var(--gd)}
-button,select,input{font:inherit;border-radius:12px;border:0;padding:12px}
-button{background:var(--bl);color:#04121f;font-weight:600;width:100%;margin-top:10px}
-button.g{background:var(--gd)}button.s{background:#1a2a40;color:var(--tx)}
+button,select,input{font:inherit;border-radius:16px;border:0;padding:16px}
+button{background:linear-gradient(135deg,#6cc8ff,#3aa7ee);color:#04121f;font-weight:700;font-size:17px;width:100%;margin-top:12px;min-height:56px;box-shadow:0 6px 18px rgba(108,200,255,.28);transition:transform .15s,box-shadow .15s,filter .15s;cursor:pointer}
+button:active{transform:scale(.95);filter:brightness(1.15);box-shadow:0 2px 8px rgba(108,200,255,.4)}
+button.g{background:linear-gradient(135deg,#f4c14b,#e0a52a);box-shadow:0 6px 18px rgba(244,193,75,.28)}button.s{background:#1a2a40;color:var(--tx);box-shadow:none}
+select{width:100%;background:#0a1320;color:var(--tx);border:1px solid var(--bd);margin-top:10px}
+.card{animation:in .45s ease both}@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.tab.on{animation:in .3s ease}.foot{text-align:center;margin:18px 0 6px}.foot a{color:var(--mu);text-decoration:none;font-size:14px;transition:color .2s}.foot a:active{color:var(--bl)}
 input{width:100%;background:#0a1320;color:var(--tx);border:1px solid var(--bd)}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0a111c;border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
-nav a{flex:1;text-align:center;padding:14px 0;color:var(--mu);font-size:13px}nav a.on{color:var(--bl)}
+nav a{flex:1;text-align:center;padding:18px 0;color:var(--mu);font-size:15px;font-weight:600;transition:transform .15s,color .2s,background .2s}nav a:active{transform:scale(.9);background:#13202f}nav a.on{color:var(--bl);background:#0f1b2b;border-top:3px solid var(--bl)}
 .tab{display:none}.tab.on{display:block}.pill{font-size:11px;padding:2px 8px;border-radius:99px;background:#1a2a40}
-.plan{border-color:#1c3350}.plan.cur{border-color:var(--bl)}.plan.ult{border-color:#6b5a22}.plan.ult.cur{border-color:var(--gd)}
 ul{padding-left:18px;margin:8px 0}li{margin:4px 0}
 </style></head><body>
 <header><h1>GoldNews AI</h1><p class="sub">Noticias USD de alto impacto · Sesgo IA · XAUUSD</p>
@@ -30,25 +33,22 @@ ul{padding-left:18px;margin:8px 0}li{margin:4px 0}
 
 <section class="tab" id="t-sig"><div id="sig"></div></section>
 
-<section class="tab" id="t-plan"><div class="card"><b>Elige tu plan</b><div class="mu">Selecciona un plan para recibir sesgo IA y señales XAUUSD.</div></div>
-<div id="plans"></div>
-<div class="card"><b>Clave API de Claude (opcional)</b><div class="mu">Activa el análisis IA. Se guarda solo en tu teléfono.</div>
-<input id="key" type="password" placeholder="sk-ant-..."><button class="s" onclick="saveKey()">Guardar clave</button></div>
-<div class="card mu">Aviso: contenido informativo, no es asesoría financiera. Operar conlleva riesgo de pérdida.</div></section>
+<section class="tab" id="t-plan">
+<div class="card"><b>Clave API para análisis IA</b><div class="mu">Se guarda solo en tu teléfono.</div>
+<select id="prov"><option value="claude">Claude (Anthropic)</option><option value="gemini">Gemini (Google)</option></select>
+<input id="key" type="password" placeholder="Pega tu clave API" style="margin-top:10px"><button onclick="saveKey()">Guardar clave</button></div>
+<div class="card mu">Aviso: contenido informativo, no es asesoría financiera. Operar conlleva riesgo de pérdida.</div>
+<div class="foot"><a href="https://presentacion-olive.vercel.app" target="_blank" rel="noopener">© Geremy 2024 - 2026</a></div></section>
 
-<nav><a class="on" data-t="cal">📅 Noticias</a><a data-t="bias">🧠 Sesgo</a><a data-t="sig">🎯 Señal</a><a data-t="plan">⭐ Plan</a></nav>
+<nav><a class="on" data-t="cal">📅 Noticias</a><a data-t="bias">🧠 Sesgo</a><a data-t="sig">🎯 Señal</a><a data-t="plan">⚙️ API</a></nav>
 
 <script>
 const $=id=>document.getElementById(id), LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}, SV=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const PLANS={
- standard:{name:'Standard',price:15,feat:['Calendario y alerta NFP, CPI y FOMC','Sesgo IA + señal XAUUSD (3 noticias mayores)']},
- pro:{name:'Pro',price:25,feat:['Todas las noticias USD de alto impacto (NFP, CPI, FOMC, PPI, GDP, ISM PMI)','Sesgo IA + señal XAUUSD (todas las noticias)']},
- ultimate:{name:'Ultimate',price:50,feat:['Todas las noticias y señales USD','Prioridad: Dirección XAUUSD de hoy','Prioridad: Signal Swing (entrada/TP/SL), no diaria, objetivos 200-400 pips','Todas las alertas y funciones futuras']}};
 const MAJOR=/non-farm|nfp|cpi|fomc|federal funds|fed chair|press conf|rate statement/i;
 const KEYEV=/non-farm|cpi|fomc|federal funds|ppi|gdp|ism|pmi|retail sales|unemployment|jobless|pce|powell|fed chair|rate statement/i;
 // Indicadores donde "más alto" = USD fuerte = oro bajista (inversos: desempleo/jobless = USD débil)
 const INVERSE=/unemployment|jobless/i;
-let plan=LS('plan','standard'),events=[],price=null;
+let plan='ultimate',events=[],price=null;
 
 const http=async(url,opt={})=>{const C=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.CapacitorHttp;
  if(C&&Capacitor.isNativePlatform()){const r=await C.request({url,method:opt.method||'GET',headers:opt.headers||{},data:opt.body?JSON.parse(opt.body):undefined});return r.data}
@@ -59,7 +59,7 @@ async function loadEvents(){
  if(all.length)SV('ev',all);else all=LS('ev',[]);
  events=all.filter(e=>e.country==='USD'&&e.impact==='High'&&KEYEV.test(e.title)).map(e=>({...e,t:new Date(e.date).getTime()})).sort((a,b)=>a.t-b.t);
 }
-const allowed=e=>plan==='standard'?MAJOR.test(e.title):true;
+const allowed=e=>true;
 const num=s=>{if(s==null||s==='')return NaN;const m=String(s).replace(/,/g,'').match(/-?\d+(\.\d+)?/);if(!m)return NaN;let v=parseFloat(m[0]);if(/K/i.test(s))v*=1e3;if(/M/i.test(s))v*=1e6;if(/B/i.test(s))v*=1e9;return v};
 const key=e=>e.title+e.date;
 function ruleBias(e){const a=num(LS('act',{})[key(e)]),f=num(e.forecast);
@@ -80,26 +80,26 @@ function agg(){const done=events.filter(allowed).map(e=>({e,b:ruleBias(e)})).fil
 function renderBias(){const nx=events.filter(allowed).find(e=>e.t>Date.now());const g=agg();
  $('bias').innerHTML=`<div class="card"><b>Sesgo IA XAUUSD</b><div style="font-size:22px;margin:8px 0">${g.n?lbl(g.dir):'Sin datos publicados aún'}</div>
  <div class="mu">Motor de reglas: compara dato real vs consenso. USD fuerte (dato mayor al esperado) = presión bajista en oro; desempleo/jobless funcionan al revés.</div>
- ${hasAI()?`<button onclick="runAI()">Analizar con Claude</button><div id="aiout" class="mu" style="white-space:pre-wrap;margin-top:8px">${LS('aiout','')}</div>`:'<div class="mu" style="margin-top:8px">Añade tu clave en Plan para análisis IA.</div>'}</div>
+ ${hasAI()?`<button onclick="runAI()">Analizar con IA</button><div id="aiout" class="mu" style="white-space:pre-wrap;margin-top:8px">${LS('aiout','')}</div>`:'<div class="mu" style="margin-top:8px">Añade tu clave en API para análisis IA.</div>'}</div>
  ${nx?`<div class="card"><b>Próxima:</b> ${nx.title}<div class="mu" id="cd"></div></div>`:''}`;tick()}
 const hasAI=()=>!!LS('ck','');
 async function runAI(){$('aiout').textContent='Analizando...';
  const ev=events.filter(allowed).filter(e=>Math.abs(e.t-Date.now())<864e5*2).map(e=>({t:e.title,fecha:e.date,previo:e.previous,consenso:e.forecast,real:LS('act',{})[key(e)]||null}));
- try{const r=await http('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':LS('ck',''),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
- body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,system:'Eres analista macro de oro (XAUUSD). Responde en español, máximo 120 palabras: sesgo (ALCISTA/BAJISTA/NEUTRAL), confianza (baja/media/alta), razón breve y riesgo clave. Sin asegurar resultados.',messages:[{role:'user',content:`Precio XAUUSD: ${price}. Eventos USD: ${JSON.stringify(ev)}`}]})});
- const t=(r.content||[]).map(c=>c.text||'').join('')||JSON.stringify(r);SV('aiout',t);$('aiout').textContent=t}catch(e){$('aiout').textContent='Error: '+e.message}}
+ const sys='Eres analista macro de oro (XAUUSD). Responde en español, máximo 120 palabras: sesgo (ALCISTA/BAJISTA/NEUTRAL), confianza (baja/media/alta), razón breve y riesgo clave. Sin asegurar resultados.',usr=`Precio XAUUSD: ${price}. Eventos USD: ${JSON.stringify(ev)}`;
+ try{let t;if(LS('pv','claude')==='gemini'){const r=await http('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+encodeURIComponent(LS('ck','')),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:usr}]}]})});
+ t=r.candidates?.[0]?.content?.parts?.map(p=>p.text).join('')||JSON.stringify(r)}
+ else{const r=await http('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':LS('ck',''),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,system:sys,messages:[{role:'user',content:usr}]})});
+ t=(r.content||[]).map(c=>c.text||'').join('')||JSON.stringify(r)}
+ SV('aiout',t);$('aiout').textContent=t}catch(e){$('aiout').textContent='Error: '+e.message}}
 
 function renderSig(){let h='';
- if(plan!=='ultimate'){h=`<div class="card"><b>Dirección XAUUSD hoy y Signal Swing</b><div class="mu">Disponible en el plan Ultimate.</div><button class="g" onclick="setPlan('ultimate')">Pasar a Ultimate</button></div>`}
+ if(false){h=`<div class="card"><b>Dirección XAUUSD hoy y Signal Swing</b><div class="mu">Disponible en el plan Ultimate.</div><button class="g" onclick="setPlan('ultimate')">Pasar a Ultimate</button></div>`}
  else{const g=agg(),p=price;const sw=Math.abs(g.s)>=2&&p; // solo cuando hay setup de calidad
  h=`<div class="card"><b>Dirección XAUUSD hoy</b><div style="font-size:22px;margin-top:8px">${g.n?lbl(g.dir):'Esperando datos'}</div></div>
  <div class="card"><b>Signal Swing</b><div class="mu">No es diaria: aparece solo con setup de alta calidad (sesgo fuerte). 1 pip = 0.10 USD.</div>
  ${sw?(()=>{const d=g.dir,sl=200*.1,tp=400*.1;return `<div style="margin-top:8px"><b class="${d>0?'up':'dn'}">${d>0?'BUY':'SELL'}</b> @ ${p.toFixed(2)}<br>SL ${(p-d*sl).toFixed(2)} (200 pips)<br>TP ${(p+d*tp).toFixed(2)} (400 pips) · R:R 1:2</div>`})():'<div style="margin-top:8px">Sin señal por ahora.</div>'}</div>`}
  $('sig').innerHTML=h}
 
-function renderPlans(){$('plans').innerHTML=Object.entries(PLANS).map(([k,p])=>`<div class="card plan ${k==='ultimate'?'ult':''} ${plan===k?'cur':''}"><div class="row"><b>${p.name}</b><b class="${k==='ultimate'?'gd':''}" style="color:${k==='ultimate'?'':'var(--bl)'}">$${p.price}/mes</b></div><ul>${p.feat.map(f=>`<li>${f}</li>`).join('')}</ul><button class="${k==='ultimate'?'g':''}" onclick="setPlan('${k}')">${plan===k?'Plan actual':'Elegir '+p.name}</button></div>`).join('')}
-// NOTA: aquí integrar Google Play Billing / RevenueCat para cobros reales.
-function setPlan(p){plan=p;SV('plan',p);renderAll();scheduleAlerts()}
 function saveKey(){SV('ck',$('key').value.trim());$('key').value='';renderAll();alert('Clave guardada')}
 
 async function loadPrice(){try{const d=await http('https://api.gold-api.com/price/XAU');price=d.price;SV('lp',price)}catch(e){price=LS('lp',null)}
@@ -115,7 +115,7 @@ async function scheduleAlerts(){const L=LN();if(!L)return;try{const p=await L.ch
 function tick(){const nx=events.filter(allowed).find(e=>e.t>Date.now()),c=$('cd');if(!nx||!c)return;const s=Math.floor((nx.t-Date.now())/1e3);c.textContent=`Faltan ${Math.floor(s/3600)}h ${Math.floor(s%3600/60)}m ${s%60}s`}
 setInterval(tick,1000);
 
-function renderAll(){renderCal();renderBias();renderSig();renderPlans()}
+function renderAll(){renderCal();renderBias();renderSig()}
 document.querySelectorAll('nav a').forEach(a=>a.onclick=()=>{document.querySelectorAll('nav a,.tab').forEach(x=>x.classList.remove('on'));a.classList.add('on');$('t-'+a.dataset.t).classList.add('on')});
-(async()=>{await loadEvents();renderAll();loadPrice();setInterval(loadPrice,6e4);setInterval(async()=>{await loadEvents();renderAll()},9e5);scheduleAlerts()})();
+(async()=>{await loadEvents();renderAll();loadPrice();setInterval(loadPrice,6e4);setInterval(async()=>{await loadEvents();renderAll()},9e5);scheduleAlerts();$('prov').value=LS('pv','claude');$('prov').onchange=()=>SV('pv',$('prov').value)})();
 </script></body></html>
