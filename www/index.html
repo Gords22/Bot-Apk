@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GoldNews AI</title>
+<style>
+:root{--bg:#0b1220;--card:#101826;--bd:#1c3350;--tx:#e6edf5;--mu:#8da2b8;--bl:#6cc8ff;--gd:#f4c14b;--up:#3ddc97;--dn:#ff6b6b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(#10263a,#070b12);color:var(--tx);font:15px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 80px}
+header{padding:18px 18px 4px}h1{margin:0;font-size:22px}.sub{color:var(--mu);margin:4px 0 0}
+.price{font:600 28px monospace;color:var(--gd)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin:12px 16px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mu{color:var(--mu);font-size:13px}.up{color:var(--up)}.dn{color:var(--dn)}.gd{color:var(--gd)}
+button,select,input{font:inherit;border-radius:12px;border:0;padding:12px}
+button{background:var(--bl);color:#04121f;font-weight:600;width:100%;margin-top:10px}
+button.g{background:var(--gd)}button.s{background:#1a2a40;color:var(--tx)}
+input{width:100%;background:#0a1320;color:var(--tx);border:1px solid var(--bd)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0a111c;border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
+nav a{flex:1;text-align:center;padding:14px 0;color:var(--mu);font-size:13px}nav a.on{color:var(--bl)}
+.tab{display:none}.tab.on{display:block}.pill{font-size:11px;padding:2px 8px;border-radius:99px;background:#1a2a40}
+.plan{border-color:#1c3350}.plan.cur{border-color:var(--bl)}.plan.ult{border-color:#6b5a22}.plan.ult.cur{border-color:var(--gd)}
+ul{padding-left:18px;margin:8px 0}li{margin:4px 0}
+</style></head><body>
+<header><h1>GoldNews AI</h1><p class="sub">Noticias USD de alto impacto · Sesgo IA · XAUUSD</p>
+<div class="price" id="px">--</div><div class="mu" id="pxs"></div></header>
+
+<section class="tab on" id="t-cal"><div id="cal"></div>
+<div class="card"><button class="s" onclick="enableAlerts()">🔔 Activar alertas (15 min antes)</button><div class="mu" id="alertmsg"></div></div></section>
+
+<section class="tab" id="t-bias"><div id="bias"></div></section>
+
+<section class="tab" id="t-sig"><div id="sig"></div></section>
+
+<section class="tab" id="t-plan"><div class="card"><b>Elige tu plan</b><div class="mu">Selecciona un plan para recibir sesgo IA y señales XAUUSD.</div></div>
+<div id="plans"></div>
+<div class="card"><b>Clave API de Claude (opcional)</b><div class="mu">Activa el análisis IA. Se guarda solo en tu teléfono.</div>
+<input id="key" type="password" placeholder="sk-ant-..."><button class="s" onclick="saveKey()">Guardar clave</button></div>
+<div class="card mu">Aviso: contenido informativo, no es asesoría financiera. Operar conlleva riesgo de pérdida.</div></section>
+
+<nav><a class="on" data-t="cal">📅 Noticias</a><a data-t="bias">🧠 Sesgo</a><a data-t="sig">🎯 Señal</a><a data-t="plan">⭐ Plan</a></nav>
+
+<script>
+const $=id=>document.getElementById(id), LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}, SV=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const PLANS={
+ standard:{name:'Standard',price:15,feat:['Calendario y alerta NFP, CPI y FOMC','Sesgo IA + señal XAUUSD (3 noticias mayores)']},
+ pro:{name:'Pro',price:25,feat:['Todas las noticias USD de alto impacto (NFP, CPI, FOMC, PPI, GDP, ISM PMI)','Sesgo IA + señal XAUUSD (todas las noticias)']},
+ ultimate:{name:'Ultimate',price:50,feat:['Todas las noticias y señales USD','Prioridad: Dirección XAUUSD de hoy','Prioridad: Signal Swing (entrada/TP/SL), no diaria, objetivos 200-400 pips','Todas las alertas y funciones futuras']}};
+const MAJOR=/non-farm|nfp|cpi|fomc|federal funds|fed chair|press conf|rate statement/i;
+const KEYEV=/non-farm|cpi|fomc|federal funds|ppi|gdp|ism|pmi|retail sales|unemployment|jobless|pce|powell|fed chair|rate statement/i;
+// Indicadores donde "más alto" = USD fuerte = oro bajista (inversos: desempleo/jobless = USD débil)
+const INVERSE=/unemployment|jobless/i;
+let plan=LS('plan','standard'),events=[],price=null;
+
+const http=async(url,opt={})=>{const C=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.CapacitorHttp;
+ if(C&&Capacitor.isNativePlatform()){const r=await C.request({url,method:opt.method||'GET',headers:opt.headers||{},data:opt.body?JSON.parse(opt.body):undefined});return r.data}
+ const r=await fetch(url,opt);return r.json()};
+
+async function loadEvents(){
+ let all=[];for(const w of['thisweek','nextweek']){try{const d=await http(`https://nfs.faireconomy.media/ff_calendar_${w}.json`);if(Array.isArray(d))all=all.concat(d)}catch(e){}}
+ if(all.length)SV('ev',all);else all=LS('ev',[]);
+ events=all.filter(e=>e.country==='USD'&&e.impact==='High'&&KEYEV.test(e.title)).map(e=>({...e,t:new Date(e.date).getTime()})).sort((a,b)=>a.t-b.t);
+}
+const allowed=e=>plan==='standard'?MAJOR.test(e.title):true;
+const num=s=>{if(s==null||s==='')return NaN;const m=String(s).replace(/,/g,'').match(/-?\d+(\.\d+)?/);if(!m)return NaN;let v=parseFloat(m[0]);if(/K/i.test(s))v*=1e3;if(/M/i.test(s))v*=1e6;if(/B/i.test(s))v*=1e9;return v};
+const key=e=>e.title+e.date;
+function ruleBias(e){const a=num(LS('act',{})[key(e)]),f=num(e.forecast);
+ if(isNaN(a)||isNaN(f))return null;const sur=(a-f)/(Math.abs(f)||1);const dir=(INVERSE.test(e.title)?1:-1)*Math.sign(sur);
+ const mag=Math.min(3,Math.round(Math.abs(sur)*20)/2);return{dir,score:dir*Math.max(.5,mag),sur}}
+const lbl=d=>d>0?'<span class="up">ALCISTA ORO ▲</span>':d<0?'<span class="dn">BAJISTA ORO ▼</span>':'NEUTRAL';
+
+function renderCal(){const list=events.filter(allowed).filter(e=>e.t>Date.now()-864e5*2).slice(0,25);
+ $('cal').innerHTML=list.map(e=>{const d=new Date(e.t);const b=ruleBias(e);
+ return `<div class="card"><div class="row"><b>${e.title}</b><span class="pill gd">HIGH</span></div>
+ <div class="mu">${d.toLocaleString([],{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})} · Prev ${e.previous||'-'} · Prev. consenso ${e.forecast||'-'}</div>
+ <input placeholder="Dato real (ej. 3.2% / 215K)" value="${LS('act',{})[key(e)]||''}" onchange="setAct('${key(e).replace(/'/g,"\\'")}',this.value)">
+ ${b?`<div style="margin-top:8px">${lbl(b.dir)} <span class="mu">fuerza ${Math.abs(b.score).toFixed(1)}</span></div>`:''}</div>`}).join('')||'<div class="card mu">Sin eventos.</div>'}
+function setAct(k,v){const a=LS('act',{});a[k]=v;SV('act',a);renderAll()}
+
+function agg(){const done=events.filter(allowed).map(e=>({e,b:ruleBias(e)})).filter(x=>x.b&&x.e.t>Date.now()-864e5);
+ const s=done.reduce((a,x)=>a+x.b.score,0);return{s,n:done.length,dir:Math.sign(s)}}
+function renderBias(){const nx=events.filter(allowed).find(e=>e.t>Date.now());const g=agg();
+ $('bias').innerHTML=`<div class="card"><b>Sesgo IA XAUUSD</b><div style="font-size:22px;margin:8px 0">${g.n?lbl(g.dir):'Sin datos publicados aún'}</div>
+ <div class="mu">Motor de reglas: compara dato real vs consenso. USD fuerte (dato mayor al esperado) = presión bajista en oro; desempleo/jobless funcionan al revés.</div>
+ ${hasAI()?`<button onclick="runAI()">Analizar con Claude</button><div id="aiout" class="mu" style="white-space:pre-wrap;margin-top:8px">${LS('aiout','')}</div>`:'<div class="mu" style="margin-top:8px">Añade tu clave en Plan para análisis IA.</div>'}</div>
+ ${nx?`<div class="card"><b>Próxima:</b> ${nx.title}<div class="mu" id="cd"></div></div>`:''}`;tick()}
+const hasAI=()=>!!LS('ck','');
+async function runAI(){$('aiout').textContent='Analizando...';
+ const ev=events.filter(allowed).filter(e=>Math.abs(e.t-Date.now())<864e5*2).map(e=>({t:e.title,fecha:e.date,previo:e.previous,consenso:e.forecast,real:LS('act',{})[key(e)]||null}));
+ try{const r=await http('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':LS('ck',''),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+ body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,system:'Eres analista macro de oro (XAUUSD). Responde en español, máximo 120 palabras: sesgo (ALCISTA/BAJISTA/NEUTRAL), confianza (baja/media/alta), razón breve y riesgo clave. Sin asegurar resultados.',messages:[{role:'user',content:`Precio XAUUSD: ${price}. Eventos USD: ${JSON.stringify(ev)}`}]})});
+ const t=(r.content||[]).map(c=>c.text||'').join('')||JSON.stringify(r);SV('aiout',t);$('aiout').textContent=t}catch(e){$('aiout').textContent='Error: '+e.message}}
+
+function renderSig(){let h='';
+ if(plan!=='ultimate'){h=`<div class="card"><b>Dirección XAUUSD hoy y Signal Swing</b><div class="mu">Disponible en el plan Ultimate.</div><button class="g" onclick="setPlan('ultimate')">Pasar a Ultimate</button></div>`}
+ else{const g=agg(),p=price;const sw=Math.abs(g.s)>=2&&p; // solo cuando hay setup de calidad
+ h=`<div class="card"><b>Dirección XAUUSD hoy</b><div style="font-size:22px;margin-top:8px">${g.n?lbl(g.dir):'Esperando datos'}</div></div>
+ <div class="card"><b>Signal Swing</b><div class="mu">No es diaria: aparece solo con setup de alta calidad (sesgo fuerte). 1 pip = 0.10 USD.</div>
+ ${sw?(()=>{const d=g.dir,sl=200*.1,tp=400*.1;return `<div style="margin-top:8px"><b class="${d>0?'up':'dn'}">${d>0?'BUY':'SELL'}</b> @ ${p.toFixed(2)}<br>SL ${(p-d*sl).toFixed(2)} (200 pips)<br>TP ${(p+d*tp).toFixed(2)} (400 pips) · R:R 1:2</div>`})():'<div style="margin-top:8px">Sin señal por ahora.</div>'}</div>`}
+ $('sig').innerHTML=h}
+
+function renderPlans(){$('plans').innerHTML=Object.entries(PLANS).map(([k,p])=>`<div class="card plan ${k==='ultimate'?'ult':''} ${plan===k?'cur':''}"><div class="row"><b>${p.name}</b><b class="${k==='ultimate'?'gd':''}" style="color:${k==='ultimate'?'':'var(--bl)'}">$${p.price}/mes</b></div><ul>${p.feat.map(f=>`<li>${f}</li>`).join('')}</ul><button class="${k==='ultimate'?'g':''}" onclick="setPlan('${k}')">${plan===k?'Plan actual':'Elegir '+p.name}</button></div>`).join('')}
+// NOTA: aquí integrar Google Play Billing / RevenueCat para cobros reales.
+function setPlan(p){plan=p;SV('plan',p);renderAll();scheduleAlerts()}
+function saveKey(){SV('ck',$('key').value.trim());$('key').value='';renderAll();alert('Clave guardada')}
+
+async function loadPrice(){try{const d=await http('https://api.gold-api.com/price/XAU');price=d.price;SV('lp',price)}catch(e){price=LS('lp',null)}
+ $('px').textContent=price?price.toFixed(2):'--';$('pxs').textContent='XAU/USD · spot';renderSig()}
+
+const LN=()=>window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications;
+async function enableAlerts(){const L=LN();if(!L){$('alertmsg').textContent='Alertas solo en la app Android.';return}
+ const r=await L.requestPermissions();$('alertmsg').textContent=r.display==='granted'?'Alertas activadas ✔':'Permiso denegado';scheduleAlerts()}
+async function scheduleAlerts(){const L=LN();if(!L)return;try{const p=await L.checkPermissions();if(p.display!=='granted')return;
+ const pend=await L.getPending();if(pend.notifications.length)await L.cancel({notifications:pend.notifications});
+ const ns=events.filter(allowed).filter(e=>e.t-9e5>Date.now()).slice(0,60).map((e,i)=>({id:i+1,title:'⚠️ '+e.title+' en 15 min',body:'Alto impacto USD · volatilidad en XAUUSD',schedule:{at:new Date(e.t-9e5),allowWhileIdle:true}}));
+ if(ns.length)await L.schedule({notifications:ns})}catch(e){}}
+function tick(){const nx=events.filter(allowed).find(e=>e.t>Date.now()),c=$('cd');if(!nx||!c)return;const s=Math.floor((nx.t-Date.now())/1e3);c.textContent=`Faltan ${Math.floor(s/3600)}h ${Math.floor(s%3600/60)}m ${s%60}s`}
+setInterval(tick,1000);
+
+function renderAll(){renderCal();renderBias();renderSig();renderPlans()}
+document.querySelectorAll('nav a').forEach(a=>a.onclick=()=>{document.querySelectorAll('nav a,.tab').forEach(x=>x.classList.remove('on'));a.classList.add('on');$('t-'+a.dataset.t).classList.add('on')});
+(async()=>{await loadEvents();renderAll();loadPrice();setInterval(loadPrice,6e4);setInterval(async()=>{await loadEvents();renderAll()},9e5);scheduleAlerts()})();
+</script></body></html>
