@@ -95,14 +95,14 @@ async function runAI(){$('aiout').textContent='Analizando...';
 function renderSig(){let h='';
  if(false){h=`<div class="card"><b>Dirección XAUUSD hoy y Signal Swing</b><div class="mu">Disponible en el plan Ultimate.</div><button class="g" onclick="setPlan('ultimate')">Pasar a Ultimate</button></div>`}
  else{const g=agg(),p=price;const sw=Math.abs(g.s)>=2&&p; // solo cuando hay setup de calidad
- h=`<div class="card"><b>Dirección XAUUSD hoy</b><div style="font-size:22px;margin-top:8px">${g.n?lbl(g.dir):'Esperando datos'}</div></div>
+ h=`<div class="card"><b>Dirección XAUUSD hoy</b><div style="font-size:22px;margin-top:8px">${g.n?lbl(g.dir):'Esperando datos: escribe el dato real de una noticia en Noticias'}</div></div>
  <div class="card"><b>Signal Swing</b><div class="mu">No es diaria: aparece solo con setup de alta calidad (sesgo fuerte). 1 pip = 0.10 USD.</div>
  ${sw?(()=>{const d=g.dir,sl=200*.1,tp=400*.1;return `<div style="margin-top:8px"><b class="${d>0?'up':'dn'}">${d>0?'BUY':'SELL'}</b> @ ${p.toFixed(2)}<br>SL ${(p-d*sl).toFixed(2)} (200 pips)<br>TP ${(p+d*tp).toFixed(2)} (400 pips) · R:R 1:2</div>`})():'<div style="margin-top:8px">Sin señal por ahora.</div>'}</div>`}
- $('sig').innerHTML=h}
+ $('sig').innerHTML=trendHTML()+h}
 
 function saveKey(){SV('ck',$('key').value.trim());$('key').value='';renderAll();alert('Clave guardada')}
 
-async function loadPrice(){try{const d=await http('https://api.gold-api.com/price/XAU');price=d.price;SV('lp',price)}catch(e){price=LS('lp',null)}
+async function loadPrice(){try{const d=await http('https://api.gold-api.com/price/XAU');price=d.price;SV('lp',price);const tk=LS('tk',[]);tk.push([Date.now(),price]);SV('tk',tk.slice(-1500))}catch(e){price=LS('lp',null)}
  $('px').textContent=price?price.toFixed(2):'--';$('pxs').textContent='XAU/USD · spot';renderSig()}
 
 const LN=()=>window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications;
@@ -115,7 +115,18 @@ async function scheduleAlerts(){const L=LN();if(!L)return;try{const p=await L.ch
 function tick(){const nx=events.filter(allowed).find(e=>e.t>Date.now()),c=$('cd');if(!nx||!c)return;const s=Math.floor((nx.t-Date.now())/1e3);c.textContent=`Faltan ${Math.floor(s/3600)}h ${Math.floor(s%3600/60)}m ${s%60}s`}
 setInterval(tick,1000);
 
+
+let TR={m5:null,m15:null};
+const ema=(a,p)=>{const k=2/(p+1);let e=a[0];for(const x of a)e=x*k+e*(1-k);return e};
+function trendOf(c,th){if(c.length<22)return{st:'wait',n:c.length};const w=c.slice(-60),f=ema(w,9),s=ema(w,21),l=w[w.length-1],d=(f-s)/l;return{st:d>th&&l>s?'up':d<-th&&l<s?'dn':'lat'}}
+async function yahoo(iv){const d=await http(`https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=${iv}&range=5d`);return d.chart.result[0].indicators.quote[0].close.filter(x=>x!=null)}
+function tickCloses(m){const b={};for(const [t,p] of LS('tk',[]))b[Math.floor(t/(m*6e4))]=p;return Object.keys(b).sort((x,y)=>x-y).map(k=>b[k])}
+async function loadTrend(){for(const [k,iv,m,th] of [['m5','5m',5,.00012],['m15','15m',15,.00025]]){let c=[],src='Yahoo (GC=F)';try{c=await yahoo(iv)}catch(e){}
+ if(c.length<22){c=tickCloses(m);src='ticks locales'}TR[k]={...trendOf(c,th),src,n:c.length}}renderSig()}
+const TC={up:['ALCISTA ▲','var(--up)'],dn:['BAJISTA ▼','var(--dn)'],lat:['LATERAL ▬','#fff'],wait:['Recopilando...','var(--mu)']};
+function trendHTML(){const row=(n,t)=>{if(!t)return`<div class="row" style="margin-top:8px"><span>${n}</span><span class="mu">cargando...</span></div>`;const[x,c]=TC[t.st];return`<div class="row" style="margin-top:8px"><span>${n}</span><b style="color:${c};font-size:18px">${x}</b></div>`+(t.st==='wait'?`<div class="mu">${t.n}/22 velas</div>`:'')};
+ return`<div class="card"><b>Tendencia XAUUSD</b>${row('5 minutos',TR.m5)}${row('15 minutos',TR.m15)}<div class="mu" style="margin-top:8px">Cruce de EMA 9/21 · fuente: ${TR.m5?TR.m5.src:'-'}</div></div>`}
 function renderAll(){renderCal();renderBias();renderSig()}
 document.querySelectorAll('nav a').forEach(a=>a.onclick=()=>{document.querySelectorAll('nav a,.tab').forEach(x=>x.classList.remove('on'));a.classList.add('on');$('t-'+a.dataset.t).classList.add('on')});
-(async()=>{await loadEvents();renderAll();loadPrice();setInterval(loadPrice,6e4);setInterval(async()=>{await loadEvents();renderAll()},9e5);scheduleAlerts();$('prov').value=LS('pv','claude');$('prov').onchange=()=>SV('pv',$('prov').value)})();
+(async()=>{await loadEvents();renderAll();loadPrice();setInterval(loadPrice,2e4);loadTrend();setInterval(loadTrend,6e4);setInterval(async()=>{await loadEvents();renderAll()},9e5);scheduleAlerts();$('prov').value=LS('pv','claude');$('prov').onchange=()=>SV('pv',$('prov').value)})();
 </script></body></html>
