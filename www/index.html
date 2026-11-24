@@ -1,90 +1,93 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>GoldNews AI</title>
+<meta name="theme-color" content="#060a12"><title>GoldNews AI</title>
 <style>
-:root{--bg:#0b1220;--card:#101826;--bd:#1c3350;--tx:#e6edf5;--mu:#8da2b8;--bl:#6cc8ff;--gd:#f4c14b;--up:#3ddc97;--dn:#ff6b6b}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(#10263a,#070b12);color:var(--tx);font:15px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 80px}
-header{padding:18px 18px 4px}h1{margin:0;font-size:22px}.sub{color:var(--mu);margin:4px 0 0}
-.price{font:600 28px monospace;color:var(--gd)}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin:12px 16px}
-.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.mu{color:var(--mu);font-size:13px}.up{color:var(--up)}.dn{color:var(--dn)}.gd{color:var(--gd)}
-button,select,input{font:inherit;border-radius:16px;border:0;padding:16px}
-button{background:linear-gradient(135deg,#6cc8ff,#3aa7ee);color:#04121f;font-weight:700;font-size:17px;width:100%;margin-top:12px;min-height:56px;box-shadow:0 6px 18px rgba(108,200,255,.28);transition:transform .15s,box-shadow .15s,filter .15s;cursor:pointer}
-button:active{transform:scale(.95);filter:brightness(1.15);box-shadow:0 2px 8px rgba(108,200,255,.4)}
-button.g{background:linear-gradient(135deg,#f4c14b,#e0a52a);box-shadow:0 6px 18px rgba(244,193,75,.28)}button.s{background:#1a2a40;color:var(--tx);box-shadow:none}
-select{width:100%;background:#0a1320;color:var(--tx);border:1px solid var(--bd);margin-top:10px}
-.card{animation:in .45s ease both}@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.tab.on{animation:in .3s ease}.foot{text-align:center;margin:18px 0 6px}.foot a{color:var(--mu);text-decoration:none;font-size:14px;transition:color .2s}.foot a:active{color:var(--bl)}
-input{width:100%;background:#0a1320;color:var(--tx);border:1px solid var(--bd)}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#0a111c;border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom)}
-nav a{flex:1;text-align:center;padding:18px 0;color:var(--mu);font-size:15px;font-weight:600;transition:transform .15s,color .2s,background .2s}nav a:active{transform:scale(.9);background:#13202f}nav a.on{color:var(--bl);background:#0f1b2b;border-top:3px solid var(--bl)}
-.tab{display:none}.tab.on{display:block}.pill{font-size:11px;padding:2px 8px;border-radius:99px;background:#1a2a40}
-ul{padding-left:18px;margin:8px 0}li{margin:4px 0}
+:root{--gold:#f5c451;--gold2:#ff9f1c;--blue:#5cc8ff;--up:#2ee59d;--dn:#ff5d73;--mu:#8da2b8;--tx:#eef3f9}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#060a12;color:var(--tx);font:15px system-ui,sans-serif;padding:env(safe-area-inset-top) 0 130px;overflow-x:hidden}
+.blob{position:fixed;width:340px;height:340px;border-radius:50%;filter:blur(90px);opacity:.35;z-index:-1;animation:fl 14s ease-in-out infinite alternate}
+.b1{background:#f5c451;top:-80px;right:-100px}.b2{background:#1a8cff;bottom:-80px;left:-120px;animation-delay:-6s}
+@keyframes fl{to{transform:translate(-40px,60px) scale(1.2)}}
+.glass{background:rgba(255,255,255,.05);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.09);border-radius:24px;padding:18px;margin:14px 16px;animation:in .5s ease both}
+@keyframes in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.hero{padding:22px 20px 6px}.hero small{color:var(--mu);letter-spacing:.14em;font-size:12px}
+.live{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--up);margin-right:8px;animation:pu 1.4s infinite}
+@keyframes pu{0%{box-shadow:0 0 0 0 rgba(46,229,157,.7)}100%{box-shadow:0 0 0 12px rgba(46,229,157,0)}}
+.px{font:800 46px/1.1 system-ui;background:linear-gradient(135deg,#fff0b8,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent;margin:6px 0;letter-spacing:-1px}
+.chg{font-weight:700}.up{color:var(--up)}.dn{color:var(--dn)}.mu{color:var(--mu);font-size:13px}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.chip{font-size:11px;font-weight:800;padding:4px 10px;border-radius:99px;background:rgba(245,196,81,.15);color:var(--gold);letter-spacing:.06em}
+.cd{font:800 34px monospace;background:linear-gradient(90deg,var(--blue),#b388ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+input,select{width:100%;margin-top:10px;padding:15px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.3);color:var(--tx);font:inherit}
+button{width:100%;margin-top:12px;min-height:58px;border:0;border-radius:18px;font:700 17px system-ui;color:#1a1200;background:linear-gradient(135deg,#ffe08a,var(--gold),var(--gold2));box-shadow:0 8px 24px rgba(245,196,81,.3);transition:transform .15s,filter .15s}
+button:active{transform:scale(.95);filter:brightness(1.15)}button.s{background:rgba(255,255,255,.08);color:var(--tx);box-shadow:none}
+nav{position:fixed;left:16px;right:16px;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;gap:4px;padding:8px;border-radius:26px;background:rgba(14,20,32,.85);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.1);box-shadow:0 10px 40px rgba(0,0,0,.5)}
+nav a{flex:1;text-align:center;padding:10px 0;border-radius:20px;color:var(--mu);font-size:12px;font-weight:700;transition:all .25s}
+nav svg{display:block;margin:0 auto 4px;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav a.on{background:linear-gradient(135deg,rgba(245,196,81,.25),rgba(255,159,28,.12));color:var(--gold);transform:translateY(-3px)}nav a:active{transform:scale(.9)}
+.tab{display:none}.tab.on{display:block}.foot{text-align:center;margin:20px 0}.foot a{color:var(--mu);text-decoration:none}
+.gauge{width:100%;max-width:340px;display:block;margin:0 auto}#needle{transition:transform 1.2s cubic-bezier(.2,1.4,.4,1);transform-origin:150px 150px}
+.big{font:800 26px system-ui;text-align:center;margin:4px 0}
 </style></head><body>
-<header><h1>GoldNews AI</h1><p class="sub">Noticias USD de alto impacto · Sesgo IA · XAUUSD</p>
-<div class="price" id="px">--</div><div class="mu" id="pxs"></div></header>
+<div class="blob b1"></div><div class="blob b2"></div>
+<div class="hero"><small><span class="live"></span>XAU/USD · EN VIVO</small><div class="px" id="px">--</div><div class="chg" id="chg"></div></div>
 
-<section class="tab on" id="t-cal"><div id="cal"></div>
-<div class="card"><button class="s" onclick="enableAlerts()">🔔 Activar alertas (15 min antes)</button><div class="mu" id="alertmsg"></div></div></section>
-
+<section class="tab on" id="t-cal"><div id="cal"></div></section>
 <section class="tab" id="t-bias"><div id="bias"></div></section>
-
 <section class="tab" id="t-sig"><div id="sig"></div></section>
+<section class="tab" id="t-api">
+ <div class="glass"><b>Clave API para análisis IA</b><div class="mu">Se guarda solo en tu teléfono.</div>
+ <select id="prov"><option value="claude">Claude (Anthropic)</option><option value="gemini">Gemini (Google)</option></select>
+ <input id="key" type="password" placeholder="Pega tu clave API"><button onclick="saveKey()">Guardar clave</button></div>
+ <div class="glass"><b>Alertas</b><div class="mu">Aviso 15 minutos antes de cada noticia.</div><button class="s" onclick="enableAlerts()">Activar alertas</button><div class="mu" id="am" style="margin-top:8px"></div></div>
+ <div class="glass mu">Aviso: contenido informativo, no es asesoría financiera. Operar conlleva riesgo de pérdida.</div>
+ <div class="foot"><a href="https://presentacion-olive.vercel.app" target="_blank" rel="noopener">© Geremy 2024 - 2026</a></div></section>
 
-<section class="tab" id="t-plan">
-<div class="card"><b>Clave API para análisis IA</b><div class="mu">Se guarda solo en tu teléfono.</div>
-<select id="prov"><option value="claude">Claude (Anthropic)</option><option value="gemini">Gemini (Google)</option></select>
-<input id="key" type="password" placeholder="Pega tu clave API" style="margin-top:10px"><button onclick="saveKey()">Guardar clave</button></div>
-<div class="card mu">Aviso: contenido informativo, no es asesoría financiera. Operar conlleva riesgo de pérdida.</div>
-<div class="foot"><a href="https://presentacion-olive.vercel.app" target="_blank" rel="noopener">© Geremy 2024 - 2026</a></div></section>
-
-<nav><a class="on" data-t="cal">📅 Noticias</a><a data-t="bias">🧠 Sesgo</a><a data-t="sig">🎯 Señal</a><a data-t="plan">⚙️ API</a></nav>
-
+<nav>
+ <a class="on" data-t="cal"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Noticias</a>
+ <a data-t="bias"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Sesgo</a>
+ <a data-t="sig"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Señal</a>
+ <a data-t="api"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>API</a>
+</nav>
 <script>
-const $=id=>document.getElementById(id), LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}, SV=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const MAJOR=/non-farm|nfp|cpi|fomc|federal funds|fed chair|press conf|rate statement/i;
-const KEYEV=/non-farm|cpi|fomc|federal funds|ppi|gdp|ism|pmi|retail sales|unemployment|jobless|pce|powell|fed chair|rate statement/i;
-// Indicadores donde "más alto" = USD fuerte = oro bajista (inversos: desempleo/jobless = USD débil)
-const INVERSE=/unemployment|jobless/i;
-let plan='ultimate',events=[],price=null;
-
+const $=id=>document.getElementById(id),LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},SV=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const KEYEV=/non-farm|cpi|fomc|federal funds|ppi|gdp|ism|pmi|retail sales|unemployment|jobless|pce|powell|fed chair|rate statement/i,INVERSE=/unemployment|jobless/i;
+let events=[],price=null;
 const http=async(url,opt={})=>{const C=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.CapacitorHttp;
  if(C&&Capacitor.isNativePlatform()){const r=await C.request({url,method:opt.method||'GET',headers:opt.headers||{},data:opt.body?JSON.parse(opt.body):undefined});return r.data}
  const r=await fetch(url,opt);return r.json()};
-
-async function loadEvents(){
- let all=[];for(const w of['thisweek','nextweek']){try{const d=await http(`https://nfs.faireconomy.media/ff_calendar_${w}.json`);if(Array.isArray(d))all=all.concat(d)}catch(e){}}
- if(all.length)SV('ev',all);else all=LS('ev',[]);
- events=all.filter(e=>e.country==='USD'&&e.impact==='High'&&KEYEV.test(e.title)).map(e=>({...e,t:new Date(e.date).getTime()})).sort((a,b)=>a.t-b.t);
-}
-const allowed=e=>true;
-const num=s=>{if(s==null||s==='')return NaN;const m=String(s).replace(/,/g,'').match(/-?\d+(\.\d+)?/);if(!m)return NaN;let v=parseFloat(m[0]);if(/K/i.test(s))v*=1e3;if(/M/i.test(s))v*=1e6;if(/B/i.test(s))v*=1e9;return v};
 const key=e=>e.title+e.date;
-function ruleBias(e){const a=num(LS('act',{})[key(e)]),f=num(e.forecast);
- if(isNaN(a)||isNaN(f))return null;const sur=(a-f)/(Math.abs(f)||1);const dir=(INVERSE.test(e.title)?1:-1)*Math.sign(sur);
- const mag=Math.min(3,Math.round(Math.abs(sur)*20)/2);return{dir,score:dir*Math.max(.5,mag),sur}}
-const lbl=d=>d>0?'<span class="up">ALCISTA ORO ▲</span>':d<0?'<span class="dn">BAJISTA ORO ▼</span>':'NEUTRAL';
+const num=s=>{if(s==null||s==='')return NaN;const m=String(s).replace(/,/g,'').match(/-?\d+(\.\d+)?/);if(!m)return NaN;let v=parseFloat(m[0]);if(/K/i.test(s))v*=1e3;if(/M/i.test(s))v*=1e6;if(/B/i.test(s))v*=1e9;return v};
+function ruleBias(e){const a=num(LS('act',{})[key(e)]),f=num(e.forecast);if(isNaN(a)||isNaN(f))return null;const sur=(a-f)/(Math.abs(f)||1),dir=(INVERSE.test(e.title)?1:-1)*Math.sign(sur);return{dir,score:dir*Math.max(.5,Math.min(3,Math.round(Math.abs(sur)*20)/2))}}
+const lbl=d=>d>0?'<span class="up">ALCISTA ▲</span>':d<0?'<span class="dn">BAJISTA ▼</span>':'NEUTRAL';
+function agg(){const d=events.map(e=>({e,b:ruleBias(e)})).filter(x=>x.b&&x.e.t>Date.now()-864e5);const s=d.reduce((a,x)=>a+x.b.score,0);return{s,n:d.length,dir:Math.sign(s)}}
 
-function renderCal(){const list=events.filter(allowed).filter(e=>e.t>Date.now()-864e5*2).slice(0,25);
- $('cal').innerHTML=list.map(e=>{const d=new Date(e.t);const b=ruleBias(e);
- return `<div class="card"><div class="row"><b>${e.title}</b><span class="pill gd">HIGH</span></div>
- <div class="mu">${d.toLocaleString([],{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})} · Prev ${e.previous||'-'} · Prev. consenso ${e.forecast||'-'}</div>
- <input placeholder="Dato real (ej. 3.2% / 215K)" value="${LS('act',{})[key(e)]||''}" onchange="setAct('${key(e).replace(/'/g,"\\'")}',this.value)">
- ${b?`<div style="margin-top:8px">${lbl(b.dir)} <span class="mu">fuerza ${Math.abs(b.score).toFixed(1)}</span></div>`:''}</div>`}).join('')||'<div class="card mu">Sin eventos.</div>'}
+async function loadEvents(){let all=[];for(const w of['thisweek','nextweek']){try{const d=await http(`https://nfs.faireconomy.media/ff_calendar_${w}.json`);if(Array.isArray(d))all=all.concat(d)}catch(e){}}
+ if(all.length)SV('ev',all);else all=LS('ev',[]);
+ events=all.filter(e=>e.country==='USD'&&e.impact==='High'&&KEYEV.test(e.title)).map(e=>({...e,t:new Date(e.date).getTime()})).sort((a,b)=>a.t-b.t)}
+async function loadPrice(){try{const d=await http('https://api.gold-api.com/price/XAU');price=d.price;SV('lp',price)}catch(e){price=LS('lp',null)}
+ if(price){$('px').textContent=price.toFixed(2);if(LS('openDay','')!==new Date().toDateString()){SV('open',price);SV('openDay',new Date().toDateString())}
+ const dd=price-LS('open',price);$('chg').innerHTML=`<span class="${dd>=0?'up':'dn'}">${dd>=0?'▲':'▼'} ${Math.abs(dd).toFixed(2)} hoy</span>`;renderSig()}}
+
+function renderCal(){const list=events.filter(e=>e.t>Date.now()-864e5*2).slice(0,25),nx=events.find(e=>e.t>Date.now());
+ $('cal').innerHTML=(nx?`<div class="glass"><div class="row"><span class="mu">PRÓXIMA NOTICIA</span><span class="chip">HIGH</span></div><b style="font-size:19px">${nx.title}</b><div class="cd" id="cd">--</div></div>`:'')+
+ list.map(e=>{const b=ruleBias(e);return`<div class="glass"><div class="row"><b>${e.title}</b><span class="chip">HIGH</span></div>
+ <div class="mu">${new Date(e.t).toLocaleString([],{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})} · Previo ${e.previous||'-'} · Consenso ${e.forecast||'-'}</div>
+ <input placeholder="Dato real (ej. 3.2% / 215K)" value="${LS('act',{})[key(e)]||''}" onchange="setAct(this.dataset.k,this.value)" data-k="${key(e).replace(/"/g,'&quot;')}">
+ ${b?`<div style="margin-top:10px;font-weight:800">${lbl(b.dir)}</div>`:''}</div>`}).join('')||'<div class="glass mu">Sin eventos.</div>'}
 function setAct(k,v){const a=LS('act',{});a[k]=v;SV('act',a);renderAll()}
 
-function agg(){const done=events.filter(allowed).map(e=>({e,b:ruleBias(e)})).filter(x=>x.b&&x.e.t>Date.now()-864e5);
- const s=done.reduce((a,x)=>a+x.b.score,0);return{s,n:done.length,dir:Math.sign(s)}}
-function renderBias(){const nx=events.filter(allowed).find(e=>e.t>Date.now());const g=agg();
- $('bias').innerHTML=`<div class="card"><b>Sesgo IA XAUUSD</b><div style="font-size:22px;margin:8px 0">${g.n?lbl(g.dir):'Sin datos publicados aún'}</div>
- <div class="mu">Motor de reglas: compara dato real vs consenso. USD fuerte (dato mayor al esperado) = presión bajista en oro; desempleo/jobless funcionan al revés.</div>
- ${hasAI()?`<button onclick="runAI()">Analizar con IA</button><div id="aiout" class="mu" style="white-space:pre-wrap;margin-top:8px">${LS('aiout','')}</div>`:'<div class="mu" style="margin-top:8px">Añade tu clave en API para análisis IA.</div>'}</div>
- ${nx?`<div class="card"><b>Próxima:</b> ${nx.title}<div class="mu" id="cd"></div></div>`:''}`;tick()}
-const hasAI=()=>!!LS('ck','');
+function renderBias(){const g=agg(),ang=Math.max(-3,Math.min(3,g.s))/3*80;
+ $('bias').innerHTML=`<div class="glass"><b>Sesgo del oro</b>
+ <svg class="gauge" viewBox="0 0 300 170"><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#ff5d73"/><stop offset=".5" stop-color="#f5c451"/><stop offset="1" stop-color="#2ee59d"/></linearGradient></defs>
+ <path d="M30 150A120 120 0 0 1 270 150" fill="none" stroke="url(#gg)" stroke-width="22" stroke-linecap="round"/>
+ <g id="needle" style="transform:rotate(${ang}deg)"><line x1="150" y1="150" x2="150" y2="52" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="150" cy="150" r="10" fill="#fff"/></g>
+ <text x="30" y="168" fill="#8da2b8" font-size="12">BAJISTA</text><text x="222" y="168" fill="#8da2b8" font-size="12">ALCISTA</text></svg>
+ <div class="big">${g.n?lbl(g.dir):'<span class="mu">Esperando datos</span>'}</div>
+ <div class="mu" style="text-align:center">${g.n?`Basado en ${g.n} noticia(s) con dato real`:'Escribe el dato real de una noticia en Noticias para calcularlo.'}</div></div>
+ <div class="glass"><b>Análisis IA</b>${LS('ck','')?`<button onclick="runAI()">Analizar con IA</button><div id="aiout" class="mu" style="white-space:pre-wrap;margin-top:10px">${LS('aiout','')}</div>`:'<div class="mu" style="margin-top:8px">Añade tu clave en la pestaña API para activar el análisis.</div>'}</div>`}
 async function runAI(){$('aiout').textContent='Analizando...';
- const ev=events.filter(allowed).filter(e=>Math.abs(e.t-Date.now())<864e5*2).map(e=>({t:e.title,fecha:e.date,previo:e.previous,consenso:e.forecast,real:LS('act',{})[key(e)]||null}));
+ const ev=events.filter(e=>Math.abs(e.t-Date.now())<864e5*2).map(e=>({t:e.title,fecha:e.date,previo:e.previous,consenso:e.forecast,real:LS('act',{})[key(e)]||null}));
  const sys='Eres analista macro de oro (XAUUSD). Responde en español, máximo 120 palabras: sesgo (ALCISTA/BAJISTA/NEUTRAL), confianza (baja/media/alta), razón breve y riesgo clave. Sin asegurar resultados.',usr=`Precio XAUUSD: ${price}. Eventos USD: ${JSON.stringify(ev)}`;
  try{let t;if(LS('pv','claude')==='gemini'){const r=await http('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+encodeURIComponent(LS('ck','')),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:usr}]}]})});
  t=r.candidates?.[0]?.content?.parts?.map(p=>p.text).join('')||JSON.stringify(r)}
@@ -92,41 +95,20 @@ async function runAI(){$('aiout').textContent='Analizando...';
  t=(r.content||[]).map(c=>c.text||'').join('')||JSON.stringify(r)}
  SV('aiout',t);$('aiout').textContent=t}catch(e){$('aiout').textContent='Error: '+e.message}}
 
-function renderSig(){let h='';
- if(false){h=`<div class="card"><b>Dirección XAUUSD hoy y Signal Swing</b><div class="mu">Disponible en el plan Ultimate.</div><button class="g" onclick="setPlan('ultimate')">Pasar a Ultimate</button></div>`}
- else{const g=agg(),p=price;const sw=Math.abs(g.s)>=2&&p; // solo cuando hay setup de calidad
- h=`<div class="card"><b>Dirección XAUUSD hoy</b><div style="font-size:22px;margin-top:8px">${g.n?lbl(g.dir):'Esperando datos: escribe el dato real de una noticia en Noticias'}</div></div>
- <div class="card"><b>Signal Swing</b><div class="mu">No es diaria: aparece solo con setup de alta calidad (sesgo fuerte). 1 pip = 0.10 USD.</div>
- ${sw?(()=>{const d=g.dir,sl=200*.1,tp=400*.1;return `<div style="margin-top:8px"><b class="${d>0?'up':'dn'}">${d>0?'BUY':'SELL'}</b> @ ${p.toFixed(2)}<br>SL ${(p-d*sl).toFixed(2)} (200 pips)<br>TP ${(p+d*tp).toFixed(2)} (400 pips) · R:R 1:2</div>`})():'<div style="margin-top:8px">Sin señal por ahora.</div>'}</div>`}
- $('sig').innerHTML=trendHTML()+h}
-
-function saveKey(){SV('ck',$('key').value.trim());$('key').value='';renderAll();alert('Clave guardada')}
-
-async function loadPrice(){try{const d=await http('https://api.gold-api.com/price/XAU');price=d.price;SV('lp',price);const tk=LS('tk',[]);tk.push([Date.now(),price]);SV('tk',tk.slice(-1500))}catch(e){price=LS('lp',null)}
- $('px').textContent=price?price.toFixed(2):'--';$('pxs').textContent='XAU/USD · spot';renderSig()}
+function renderSig(){const g=agg(),sw=Math.abs(g.s)>=2&&price;
+ $('sig').innerHTML=`<div class="glass"><b>Dirección XAUUSD hoy</b><div class="big" style="margin-top:10px">${g.n?lbl(g.dir):'<span class="mu">Esperando datos</span>'}</div><div class="mu" style="text-align:center">Se calcula con las noticias que tienen dato real.</div></div>
+ <div class="glass"><b>Signal Swing</b><div class="mu">No es diaria: solo con sesgo fuerte. 1 pip = 0.10 USD.</div>
+ ${sw?(()=>{const d=g.dir;return`<div style="margin-top:12px;font-size:17px;line-height:1.7"><b class="${d>0?'up':'dn'}" style="font-size:24px">${d>0?'BUY':'SELL'}</b> @ ${price.toFixed(2)}<br>SL ${(price-d*20).toFixed(2)} (200 pips)<br>TP ${(price+d*40).toFixed(2)} (400 pips) · R:R 1:2</div>`})():'<div style="margin-top:12px">Sin señal por ahora.</div>'}</div>`}
+function saveKey(){SV('ck',$('key').value.trim());SV('pv',$('prov').value);$('key').value='';renderAll();alert('Clave guardada')}
 
 const LN=()=>window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications;
-async function enableAlerts(){const L=LN();if(!L){$('alertmsg').textContent='Alertas solo en la app Android.';return}
- const r=await L.requestPermissions();$('alertmsg').textContent=r.display==='granted'?'Alertas activadas ✔':'Permiso denegado';scheduleAlerts()}
-async function scheduleAlerts(){const L=LN();if(!L)return;try{const p=await L.checkPermissions();if(p.display!=='granted')return;
- const pend=await L.getPending();if(pend.notifications.length)await L.cancel({notifications:pend.notifications});
- const ns=events.filter(allowed).filter(e=>e.t-9e5>Date.now()).slice(0,60).map((e,i)=>({id:i+1,title:'⚠️ '+e.title+' en 15 min',body:'Alto impacto USD · volatilidad en XAUUSD',schedule:{at:new Date(e.t-9e5),allowWhileIdle:true}}));
- if(ns.length)await L.schedule({notifications:ns})}catch(e){}}
-function tick(){const nx=events.filter(allowed).find(e=>e.t>Date.now()),c=$('cd');if(!nx||!c)return;const s=Math.floor((nx.t-Date.now())/1e3);c.textContent=`Faltan ${Math.floor(s/3600)}h ${Math.floor(s%3600/60)}m ${s%60}s`}
-setInterval(tick,1000);
+async function enableAlerts(){const L=LN();if(!L){$('am').textContent='Alertas solo en la app Android.';return}const r=await L.requestPermissions();$('am').textContent=r.display==='granted'?'Alertas activadas':'Permiso denegado';scheduleAlerts()}
+async function scheduleAlerts(){const L=LN();if(!L)return;try{const p=await L.checkPermissions();if(p.display!=='granted')return;const pend=await L.getPending();if(pend.notifications.length)await L.cancel({notifications:pend.notifications});
+ const ns=events.filter(e=>e.t-9e5>Date.now()).slice(0,60).map((e,i)=>({id:i+1,title:e.title+' en 15 min',body:'Alto impacto USD · volatilidad en XAUUSD',schedule:{at:new Date(e.t-9e5),allowWhileIdle:true}}));if(ns.length)await L.schedule({notifications:ns})}catch(e){}}
+setInterval(()=>{const nx=events.find(e=>e.t>Date.now()),c=$('cd');if(!nx||!c)return;const s=Math.floor((nx.t-Date.now())/1e3),d=Math.floor(s/86400);c.textContent=(d?d+'d ':'')+String(Math.floor(s%86400/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')},1000);
 
-
-let TR={m5:null,m15:null};
-const ema=(a,p)=>{const k=2/(p+1);let e=a[0];for(const x of a)e=x*k+e*(1-k);return e};
-function trendOf(c,th){if(c.length<22)return{st:'wait',n:c.length};const w=c.slice(-60),f=ema(w,9),s=ema(w,21),l=w[w.length-1],d=(f-s)/l;return{st:d>th&&l>s?'up':d<-th&&l<s?'dn':'lat'}}
-async function yahoo(iv){const d=await http(`https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=${iv}&range=5d`);return d.chart.result[0].indicators.quote[0].close.filter(x=>x!=null)}
-function tickCloses(m){const b={};for(const [t,p] of LS('tk',[]))b[Math.floor(t/(m*6e4))]=p;return Object.keys(b).sort((x,y)=>x-y).map(k=>b[k])}
-async function loadTrend(){for(const [k,iv,m,th] of [['m5','5m',5,.00012],['m15','15m',15,.00025]]){let c=[],src='Yahoo (GC=F)';try{c=await yahoo(iv)}catch(e){}
- if(c.length<22){c=tickCloses(m);src='ticks locales'}TR[k]={...trendOf(c,th),src,n:c.length}}renderSig()}
-const TC={up:['ALCISTA ▲','var(--up)'],dn:['BAJISTA ▼','var(--dn)'],lat:['LATERAL ▬','#fff'],wait:['Recopilando...','var(--mu)']};
-function trendHTML(){const row=(n,t)=>{if(!t)return`<div class="row" style="margin-top:8px"><span>${n}</span><span class="mu">cargando...</span></div>`;const[x,c]=TC[t.st];return`<div class="row" style="margin-top:8px"><span>${n}</span><b style="color:${c};font-size:18px">${x}</b></div>`+(t.st==='wait'?`<div class="mu">${t.n}/22 velas</div>`:'')};
- return`<div class="card"><b>Tendencia XAUUSD</b>${row('5 minutos',TR.m5)}${row('15 minutos',TR.m15)}<div class="mu" style="margin-top:8px">Cruce de EMA 9/21 · fuente: ${TR.m5?TR.m5.src:'-'}</div></div>`}
 function renderAll(){renderCal();renderBias();renderSig()}
 document.querySelectorAll('nav a').forEach(a=>a.onclick=()=>{document.querySelectorAll('nav a,.tab').forEach(x=>x.classList.remove('on'));a.classList.add('on');$('t-'+a.dataset.t).classList.add('on')});
-(async()=>{await loadEvents();renderAll();loadPrice();setInterval(loadPrice,2e4);loadTrend();setInterval(loadTrend,6e4);setInterval(async()=>{await loadEvents();renderAll()},9e5);scheduleAlerts();$('prov').value=LS('pv','claude');$('prov').onchange=()=>SV('pv',$('prov').value)})();
+$('prov').value=LS('pv','claude');
+(async()=>{await loadEvents();renderAll();loadPrice();setInterval(loadPrice,2e4);setInterval(async()=>{await loadEvents();renderAll()},9e5);scheduleAlerts()})();
 </script></body></html>
