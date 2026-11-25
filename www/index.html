@@ -27,6 +27,7 @@ nav svg{display:block;margin:0 auto 4px;width:24px;height:24px;fill:none;stroke:
 nav a.on{background:linear-gradient(135deg,rgba(245,196,81,.25),rgba(255,159,28,.12));color:var(--gold);transform:translateY(-3px)}nav a:active{transform:scale(.9)}
 .tab{display:none}.tab.on{display:block}.foot{text-align:center;margin:20px 0}.foot a{color:var(--mu);text-decoration:none}
 .gauge{width:100%;max-width:340px;display:block;margin:0 auto}#needle{transition:transform 1.2s cubic-bezier(.2,1.4,.4,1);transform-origin:150px 150px}
+.err{border:1px solid rgba(255,93,115,.45);background:rgba(255,93,115,.1);border-radius:16px;padding:14px;color:var(--tx);line-height:1.5}.err b{color:var(--dn);display:block;margin-bottom:2px}.okm{border:1px solid rgba(46,229,157,.45);background:rgba(46,229,157,.1);border-radius:16px;padding:14px;color:var(--up);font-weight:700}
 .big{font:800 26px system-ui;text-align:center;margin:4px 0}
 </style></head><body>
 <div class="blob b1"></div><div class="blob b2"></div>
@@ -38,7 +39,7 @@ nav a.on{background:linear-gradient(135deg,rgba(245,196,81,.25),rgba(255,159,28,
 <section class="tab" id="t-api">
  <div class="glass"><b>Clave API para análisis IA</b><div class="mu">Se guarda solo en tu teléfono.</div>
  <select id="prov"><option value="claude">Claude (Anthropic)</option><option value="gemini">Gemini (Google)</option></select>
- <input id="key" type="password" placeholder="Pega tu clave API"><button onclick="saveKey()">Guardar clave</button></div>
+ <input id="key" type="password" placeholder="Pega tu clave API"><button onclick="saveKey()">Guardar y verificar clave</button><div id="ks" style="margin-top:12px"></div></div>
  <div class="glass"><b>Alertas</b><div class="mu">Aviso 15 minutos antes de cada noticia.</div><button class="s" onclick="enableAlerts()">Activar alertas</button><div class="mu" id="am" style="margin-top:8px"></div></div>
  <div class="glass mu">Aviso: contenido informativo, no es asesoría financiera. Operar conlleva riesgo de pérdida.</div>
  <div class="foot"><a href="https://presentacion-olive.vercel.app" target="_blank" rel="noopener">© Geremy 2024 - 2026</a></div></section>
@@ -86,20 +87,41 @@ function renderBias(){const g=agg(),ang=Math.max(-3,Math.min(3,g.s))/3*80;
  <div class="big">${g.n?lbl(g.dir):'<span class="mu">Esperando datos</span>'}</div>
  <div class="mu" style="text-align:center">${g.n?`Basado en ${g.n} noticia(s) con dato real`:'Escribe el dato real de una noticia en Noticias para calcularlo.'}</div></div>
  <div class="glass"><b>Análisis IA</b>${LS('ck','')?`<button onclick="runAI()">Analizar con IA</button><div id="aiout" class="mu" style="white-space:pre-wrap;margin-top:10px">${LS('aiout','')}</div>`:'<div class="mu" style="margin-top:8px">Añade tu clave en la pestaña API para activar el análisis.</div>'}</div>`}
-async function runAI(){$('aiout').textContent='Analizando...';
+const GEMINI_MODELS=['gemini-3.8-flash','gemini-2.5-flash'];
+const httpRaw=async(url,opt={})=>{const C=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.CapacitorHttp;
+ if(C&&Capacitor.isNativePlatform()){const r=await C.request({url,method:opt.method||'GET',headers:opt.headers||{},data:opt.body?JSON.parse(opt.body):undefined});return{status:r.status,data:r.data}}
+ const r=await fetch(url,opt);let d=null;try{d=await r.json()}catch(e){}return{status:r.status,data:d}};
+function aiErr(prov,status,data,thrown){const n=prov==='gemini'?'Gemini':'Claude',raw=JSON.stringify(data||'').toLowerCase();let t,m;
+ if(thrown){t='Sin conexión';m='No se pudo contactar con '+n+'. Revisa tu internet e inténtalo de nuevo.'}
+ else if(status===401||/api key not valid|api_key_invalid|invalid x-api-key|authentication_error|invalid api key/.test(raw)){t='Clave API no válida';m='La clave de '+n+' es incorrecta o fue revocada. Revísala en la pestaña API.'}
+ else if(status===403||/permission/.test(raw)){t='Acceso denegado';m='Tu clave no tiene permiso para usar este servicio. Verifica que esté activa y habilitada.'}
+ else if(/credit balance|billing/.test(raw)){t='Sin saldo';m='Tu cuenta de '+n+' no tiene crédito disponible. Recarga saldo o usa otra clave.'}
+ else if(status===429||/quota|rate.?limit|resource_exhausted/.test(raw)){t='Límite de uso alcanzado';m='Superaste el límite de consultas de tu clave. Espera unos minutos e inténtalo otra vez.'}
+ else if(status===404||/not.?found|no longer available/.test(raw)){t='Modelo no disponible';m='El modelo de IA fue retirado o cambió de nombre. Actualiza la app para continuar.'}
+ else if(status>=500||/overloaded/.test(raw)){t='Servicio saturado';m=n+' tiene alta demanda en este momento. Inténtalo en unos minutos.'}
+ else if(status===400){t='Solicitud rechazada';m='El servicio no aceptó la consulta. Verifica tu clave e inténtalo de nuevo.'}
+ else{t='Error inesperado';m='No se pudo completar el análisis. Inténtalo de nuevo.'}
+ return{t,m}}
+async function callAI(sys,usr,max,allowEmpty){const prov=LS('pv','claude'),k=LS('ck','');if(!k)throw{t:'Falta la clave',m:'Añade tu clave API en la pestaña API.'};let res;
+ try{if(prov==='gemini'){for(const mod of GEMINI_MODELS){res=await httpRaw(`https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent`,{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':k},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:usr}]}],generationConfig:{maxOutputTokens:max}})});if(res.status!==404)break}}
+ else res=await httpRaw('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:max,system:sys,messages:[{role:'user',content:usr}]})})}
+ catch(e){throw aiErr(prov,0,null,true)}
+ if(res.status<200||res.status>=300)throw aiErr(prov,res.status,res.data);
+ const d=res.data||{},text=prov==='gemini'?(d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join(''):(d.content||[]).map(c=>c.text||'').join('');
+ if(!text.trim()&&!allowEmpty)throw{t:'Sin respuesta',m:'La IA no devolvió contenido. Inténtalo de nuevo en unos segundos.'};return text}
+const showErr=(el,e)=>{const x=e&&e.t?e:{t:'Error inesperado',m:'No se pudo completar la operación. Inténtalo de nuevo.'};el.innerHTML=`<div class="err"><b>${x.t}</b>${x.m}</div>`};
+async function runAI(){const out=$('aiout');out.className='mu';out.textContent='Analizando...';
  const ev=events.filter(e=>Math.abs(e.t-Date.now())<864e5*2).map(e=>({t:e.title,fecha:e.date,previo:e.previous,consenso:e.forecast,real:LS('act',{})[key(e)]||null}));
  const sys='Eres analista macro de oro (XAUUSD). Responde en español, máximo 120 palabras: sesgo (ALCISTA/BAJISTA/NEUTRAL), confianza (baja/media/alta), razón breve y riesgo clave. Sin asegurar resultados.',usr=`Precio XAUUSD: ${price}. Eventos USD: ${JSON.stringify(ev)}`;
- try{let t;if(LS('pv','claude')==='gemini'){const r=await http('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+encodeURIComponent(LS('ck','')),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:usr}]}]})});
- t=r.candidates?.[0]?.content?.parts?.map(p=>p.text).join('')||JSON.stringify(r)}
- else{const r=await http('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'content-type':'application/json','x-api-key':LS('ck',''),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,system:sys,messages:[{role:'user',content:usr}]})});
- t=(r.content||[]).map(c=>c.text||'').join('')||JSON.stringify(r)}
- SV('aiout',t);$('aiout').textContent=t}catch(e){$('aiout').textContent='Error: '+e.message}}
+ try{const t=await callAI(sys,usr,600);SV('aiout',t);out.className='mu';out.style.whiteSpace='pre-wrap';out.textContent=t}catch(e){showErr(out,e)}}
 
 function renderSig(){const g=agg(),sw=Math.abs(g.s)>=2&&price;
  $('sig').innerHTML=`<div class="glass"><b>Dirección XAUUSD hoy</b><div class="big" style="margin-top:10px">${g.n?lbl(g.dir):'<span class="mu">Esperando datos</span>'}</div><div class="mu" style="text-align:center">Se calcula con las noticias que tienen dato real.</div></div>
  <div class="glass"><b>Signal Swing</b><div class="mu">No es diaria: solo con sesgo fuerte. 1 pip = 0.10 USD.</div>
  ${sw?(()=>{const d=g.dir;return`<div style="margin-top:12px;font-size:17px;line-height:1.7"><b class="${d>0?'up':'dn'}" style="font-size:24px">${d>0?'BUY':'SELL'}</b> @ ${price.toFixed(2)}<br>SL ${(price-d*20).toFixed(2)} (200 pips)<br>TP ${(price+d*40).toFixed(2)} (400 pips) · R:R 1:2</div>`})():'<div style="margin-top:12px">Sin señal por ahora.</div>'}</div>`}
-function saveKey(){SV('ck',$('key').value.trim());SV('pv',$('prov').value);$('key').value='';renderAll();alert('Clave guardada')}
+async function saveKey(){const v=$('key').value.trim(),o=$('ks');if(!v){showErr(o,{t:'Campo vacío',m:'Pega tu clave API antes de guardar.'});return}
+ SV('ck',v);SV('pv',$('prov').value);$('key').value='';o.innerHTML='<div class="mu">Verificando clave...</div>';
+ try{await callAI('Responde solo: OK','ping',50,true);o.innerHTML='<div class="okm">Clave verificada correctamente</div>'}catch(e){showErr(o,e)}renderAll()}
 
 const LN=()=>window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications;
 async function enableAlerts(){const L=LN();if(!L){$('am').textContent='Alertas solo en la app Android.';return}const r=await L.requestPermissions();$('am').textContent=r.display==='granted'?'Alertas activadas':'Permiso denegado';scheduleAlerts()}
