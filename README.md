@@ -1,5 +1,5 @@
 # GoldNews AI (APK)
-Calendario USD de alto impacto + sesgo IA + señales XAUUSD, con planes Standard/Pro/Ultimate.
+Calendario USD de alto impacto + sesgo IA + señales XAUUSD
 
 ## Datos
 - Calendario: feed público semanal de Forex Factory (faireconomy.media).
